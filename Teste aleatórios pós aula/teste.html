@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coração para Mamãe</title>
+    
+    <!-- HTML: Importando uma fonte bonita do Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS: Mantém a página preta e ocupa toda a tela */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000; /* Fundo preto para as estrelas */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HTML: Elemento canvas -->
+    <canvas id="heartCanvas"></canvas>
+
+    <script>
+        // Configuração inicial do Canvas
+        const canvas = document.getElementById("heartCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initializeStars(); // Recria estrelas ao redimensionar
+        });
+
+        // Constantes do sistema original
+        const rand = Math.random;
+        const heartPointsCount = 200;
+        const traceCount = 20;
+
+        // --- SISTEMA DE ESTRELINHAS (NOVO) ---
+        const starsCount = 150; // Quantidade de estrelas
+        let stars = [];
+
+        function initializeStars() {
+            stars = [];
+            for (let i = 0; i < starsCount; i++) {
+                stars.push({
+                    x: rand() * width,
+                    y: rand() * height,
+                    size: rand() * 1.5, // Tamanho variado
+                    // Brilho variado (piscando)
+                    opacity: rand(),
+                    blinkSpeed: 0.01 + rand() * 0.02
+                });
+            }
+        }
+
+        function drawStars() {
+            for (let i = 0; i < starsCount; i++) {
+                let s = stars[i];
+                
+                // Atualiza opacidade para piscar
+                s.opacity += s.blinkSpeed;
+                if (s.opacity > 1 || s.opacity < 0) {
+                    s.blinkSpeed = -s.blinkSpeed; // Inverte direção
+                }
+                
+                // Limita a opacidade para não sumir totalmente
+                let currentOpacity = Math.max(0.2, Math.min(0.9, s.opacity));
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        initializeStars(); // Inicializa na primeira vez
+        // ---------------------------------------
+
+        // --- SEU CÓDIGO ORIGINAL (Ajustado) ---
+        // Equação matemática do coração
+        function heartPosition(t) {
+            return {
+                x: 16 * Math.pow(Math.sin(t), 3),
+                y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))
+            };
+        }
+
+        // Pontos de destino do coração
+        let heartPoints = [];
+        for (let i = 0; i < heartPointsCount; i++) {
+            let t = (i / heartPointsCount) * Math.PI * 2;
+            let pos = heartPosition(t);
+            // Reduzi um pouco a escala para o texto caber melhor
+            let scale = Math.min(width, height) / 45; 
+            heartPoints.push({
+                x: width / 2 + pos.x * scale,
+                y: height / 2 + pos.y * scale
+            });
+        }
+
+        // Partículas do rastro
+        let e = [];
+        for (let i = 0; i < heartPointsCount; i++) {
+            let x = rand() * width;
+            let y = rand() * height;
+            e[i] = {
+                vx: 0,
+                vy: 0,
+                R: 2,
+                speed: rand() + 5,
+                q: ~(rand() * heartPointsCount),
+                D: 2 * (i % 2) - 1,
+                force: 0.2 * rand() + 0.7,
+                // Cores originais (vermelho/rosa suave)
+                f: "hsla(0," + ~~(40 * rand() + 60) + "%," + ~~(60 * rand() + 20) + "%,.3)",
+                trace: []
+            };
+            for (let k = 0; k < traceCount; k++) e[i].trace[k] = { x: x, y: y };
+        }
+
+        let config = {
+            traceK: 0.4,
+            timeDelta: 0.01
+        };
+        // ----------------------------------------
+
+        // --- SISTEMA DE TEXTO (NOVO) ---
+        function drawText(pulseScale) {
+            // Define a fonte e o tamanho (Great Vibes vem do Google Fonts)
+            // O tamanho aumenta levemente com o pulso
+            let fontSize = (Math.min(width, height) / 10) * pulseScale;
+            ctx.font = `${fontSize}px 'Great Vibes', cursive`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            // Criar um gradiente de cor bonito (Rosa -> Dourado)
+            let gradient = ctx.createLinearGradient(
+                width / 2 - 100, height / 2, 
+                width / 2 + 100, height / 2
+            );
+            gradient.addColorStop(0, "#ff69b4"); // Hot Pink
+            gradient.addColorStop(0.5, "#ffe4e1"); // Misty Rose
+            gradient.addColorStop(1, "#ffd700"); // Gold
+
+            // Desenhar sombra para dar destaque
+            ctx.shadowColor = "rgba(255, 105, 180, 0.7)";
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Preencher o texto com o gradiente
+            ctx.fillStyle = gradient;
+            ctx.fillText("Eu te amo Mãe", width / 2, height / 2);
+
+            // Reseta a sombra para não afetar outras coisas
+            ctx.shadowBlur = 0;
+        }
+        // -------------------------------
+
+        // Loop de Animação
+        let time = 0;
+        function render() {
+            time += config.timeDelta;
+
+            // Fundo semi-transparente para o rastro
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+            ctx.fillRect(0, 0, width, height);
+
+            // 1. Desenhar Estrelinhas no Fundo (NOVO)
+            drawStars();
+
+            // Efeito de pulsação
+            let pulse = 1 + 0.08 * Math.sin(time * 5);
+
+            // 2. Atualizar e Desenhar Partículas do Coração (ORIGINAL)
+            for (let i = 0; i < e.length; i++) {
+                let p = e[i];
+                let target = heartPoints[Math.abs(p.q) % heartPointsCount];
+
+                let tx = width / 2 + (target.x - width / 2) * pulse;
+                let ty = height / 2 + (target.y - height / 2) * pulse;
+
+                let dx = tx - p.trace[0].x;
+                let dy = ty - p.trace[0].y;
+                p.vx += dx * 0.005 * p.force;
+                p.vy += dy * 0.005 * p.force;
+                p.vx *= 0.92;
+                p.vy *= 0.92;
+
+                p.trace[0].x += p.vx;
+                p.trace[0].y += p.vy;
+
+                for (let k = p.trace.length - 1; k > 0; k--) {
+                    p.trace[k].x += (p.trace[k - 1].x - p.trace[k].x) * config.traceK;
+                    p.trace[k].y += (p.trace[k - 1].y - p.trace[k].y) * config.traceK;
+                }
+
+                ctx.fillStyle = p.f;
+                for (let k = 0; k < p.trace.length; k++) {
+                    ctx.beginPath();
+                    ctx.arc(p.trace[k].x, p.trace[k].y, p.R * (1 - k / p.trace.length), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // 3. Desenhar Texto no Centro com pulso (NOVO)
+            drawText(pulse);
+
+            requestAnimationFrame(render);
+        }
+
+        // Inicia
+        render();
+    </script>
+</body>
+</html>
