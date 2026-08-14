@@ -66,15 +66,23 @@
             <label for="contato">Contato</label>
             <address>
                 Email: Brunamendes@senai.br
+                <br>
                 Telefone: (11) 4002-8922
             </address><br>
+        </fieldset>
 
             <fieldset>
-                <legend>Outras Informações</legend>
+                <details>
+                    <legend>Outras Informações</legend>
+                    <summary>O que é um formulário HTML?</summary>
+                    <p>Um formulário HTML é utilizado para coletar informações dos usuários e enviá-las para um servidor.</p>
+                </details>
                 
+                <p>O campo <mark>senha</mark> precisa ter pelo menos 6 carácteres</p>
+                <label for="hora-cadastro">Horário preferido para contato:</label>
+                <input type="time" id="hora-cadastro" name="hora-cadastro">
             </fieldset>
-            
-        </fieldset>
+            <button type="submit">Cadastrar</button>
         
     </form>
 </body>
