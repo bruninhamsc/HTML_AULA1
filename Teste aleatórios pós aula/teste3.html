@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Coração de Partículas</title>
+  <style>
+    /* Reset básico para remover margens e ocupar a tela inteira */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #000; /* Fundo preto da tela */
+      overflow: hidden;       /* Remove barras de rolagem */
+    }
+    
+    /* O Canvas do efeito ocupa toda a área de fundo */
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Estilização e centralização do texto interno */
+    .center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); /* Centraliza o texto exatamente no meio */
+      color: #ea80b0;                    /* Cor rosa do texto */
+      font-family: 'Times New Roman', serif;
+      font-style: italic;
+      font-size: 28px;
+      pointer-events: none;               /* Permite clicar através do texto */
+      user-select: none;                  /* Impede seleção acidental do texto */
+      text-shadow: 0 0 10px rgba(234, 128, 176, 0.5); /* Efeito de brilho neon */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Elementos da tela: a camada de desenho (canvas) e o texto sobreposto -->
+  <canvas id="pinkboard"></canvas>
+  <div class="center-text">I Love codes</div>
+
+  <script>
+    /* ============================================================
+     * CONFIGURAÇÕES DAS PARTÍCULAS
+     * Ajuste estes valores para mudar o comportamento do efeito
+     * ============================================================ */
+    const settings = {
+      particles: {
+        length: 500,   /* Quantidade máxima de partículas na tela */
+        duration: 2,   /* Tempo de vida de cada partícula em segundos */
+        velocity: 100, /* Velocidade com que as partículas se movem para fora */
+        effect: -0.75, /* Desaceleração das partículas ao longo do tempo */
+        size: 30,      /* Tamanho máximo individual do formato do coração */
+      },
+    };
+
+    /* ============================================================
+     * CLASSE POINT (Vetores 2D)
+     * Utilizada para manipulação de posições X,Y e direções
+     * ============================================================ */
+    class Point {
+      constructor(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
+      }
+      clone() {
+        return new Point(this.x, this.y);
+      }
+      length(length) {
+        if (length === undefined)
+          return Math.sqrt(this.x * this.x + this.y * this.y);
+        this.normalize();
+        this.x *= length;
+        this.y *= length;
+        return this;
+      }
+      normalize() {
+        const len = this.length();
+        if (len !== 0) {
+          this.x /= len;
+          this.y /= len;
+        }
+        return this;
+      }
+    }
+
+    /* ============================================================
+     * CLASSE PARTICLE
+     * Gerencia a física e a renderização de cada partícula individual
+     * ============================================================ */
+    class Particle {
+      constructor() {
+        this.position = new Point();
+        this.velocity = new Point();
+        this.acceleration = new Point();
+        this.age = 0;
+      }
+      initialize(x, y, dx, dy) {
+        this.position.x = x;
+        this.position.y = y;
+        this.velocity.x = dx;
+        this.velocity.y = dy;
+        this.acceleration.x = dx * settings.particles.effect;
+        this.acceleration.y = dy * settings.particles.effect;
+        this.age = 0;
+      }
+      update(deltaTime) {
+        // Atualiza a posição da partícula aplicando velocidade e física
+        this.position.x += this.velocity.x * deltaTime;
+        this.position.y += this.velocity.y * deltaTime;
+        this.velocity.x += this.acceleration.x * deltaTime;
+        this.velocity.y += this.acceleration.y * deltaTime;
+        this.age += deltaTime;
+      }
+      draw(context, image) {
+        // Efeito de suavização de tamanho e transparência (fade-out)
+        const ease = (t) => (--t) * t * t + 1;
+        const size = image.width * ease(this.age / settings.particles.duration);
+        context.globalAlpha = 1 - this.age / settings.particles.duration;
+        context.drawImage(
+          image,
+          this.position.x - size / 2,
+          this.position.y - size / 2,
+          size,
+          size
+        );
+      }
+    }
+
+    /* ============================================================
+     * CLASSE PARTICLE POOL
+     * Otimização de performance: reutiliza objetos em vez de recriá-los
+     * ============================================================ */
+    class ParticlePool {
+      constructor(length) {
+        this.particles = new Array(length);
+        for (let i = 0; i < this.particles.length; i++) {
+          this.particles[i] = new Particle();
+        }
+        this.firstActive = 0;
+        this.firstFree = 0;
+        this.duration = settings.particles.duration;
+      }
+      add(x, y, dx, dy) {
+        this.particles[this.firstFree].initialize(x, y, dx, dy);
+        this.firstFree++;
+        if (this.firstFree === this.particles.length) this.firstFree = 0;
+        if (this.firstActive === this.firstFree) {
+          this.firstActive++;
+          if (this.firstActive === this.particles.length) this.firstActive = 0;
+        }
+      }
+      update(deltaTime) {
+        let i;
+        if (this.firstActive < this.firstFree) {
+          for (i = this.firstActive; i < this.firstFree; i++)
+            this.particles[i].update(deltaTime);
+        }
+        if (this.firstFree < this.firstActive) {
+          for (i = this.firstActive; i < this.particles.length; i++)
+            this.particles[i].update(deltaTime);
+          for (i = 0; i < this.firstFree; i++)
+            this.particles[i].update(deltaTime);
+        }
+        // Remove partículas que ultrapassaram o tempo de vida
+        while (
+          this.particles[this.firstActive].age >= this.duration &&
+          this.firstActive !== this.firstFree
+        ) {
+          this.firstActive++;
+          if (this.firstActive === this.particles.length) this.firstActive = 0;
+        }
+      }
+      draw(context, image) {
+        let i;
+        if (this.firstActive < this.firstFree) {
+          for (i = this.firstActive; i < this.firstFree; i++)
+            this.particles[i].draw(context, image);
+        }
+        if (this.firstFree < this.firstActive) {
+          for (i = this.firstActive; i < this.particles.length; i++)
+            this.particles[i].draw(context, image);
+          for (i = 0; i < this.firstFree; i++)
+            this.particles[i].draw(context, image);
+        }
+      }
+    }
+
+    /* ============================================================
+     * EQUAÇÃO MATEMÁTICA DO CORAÇÃO
+     * Retorna uma coordenada X,Y no formato de um coração com base num ângulo `t`
+     * ============================================================ */
+    function pointOnHeart(t) {
+      return new Point(
+        160 * Math.pow(Math.sin(t), 3),
+        130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t) + 25
+      );
+    }
+
+    /* ============================================================
+     * MOTOR PRINCIPAL DE RENDERIZAÇÃO
+     * ============================================================ */
+    (function (canvas) {
+      const context = canvas.getContext('2d');
+      const particles = new ParticlePool(settings.particles.length);
+      const particleRate = settings.particles.length / settings.particles.duration;
+      let time;
+
+      // Gera a textura visual em memória da partícula (pequeno coração rosa)
+      const image = (function () {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = settings.particles.size;
+        canvas.height = settings.particles.size;
+
+        function to(t) {
+          const point = pointOnHeart(t);
+          point.x = settings.particles.size / 2 + (point.x * settings.particles.size) / 350;
+          point.y = settings.particles.size / 2 - (point.y * settings.particles.size) / 350;
+          return point;
+        }
+
+        context.beginPath();
+        let t = -Math.PI;
+        let point = to(t);
+        context.moveTo(point.x, point.y);
+        while (t < Math.PI) {
+          t += 0.01;
+          point = to(t);
+          context.lineTo(point.x, point.y);
+        }
+        context.closePath();
+        context.fillStyle = '#ea80b0'; // Cor rosa das partículas
+        context.fill();
+
+        const img = new Image();
+        img.src = canvas.toDataURL();
+        return img;
+      })();
+
+      // Loop principal de animação
+      function render() {
+        requestAnimationFrame(render);
+
+        const newTime = new Date().getTime() / 1000;
+        const deltaTime = newTime - (time || newTime);
+        time = newTime;
+
+        // Limpa a tela para o próximo quadro
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Cria novas partículas ao longo das curvas do coração
+        const amount = particleRate * deltaTime;
+        for (let i = 0; i < amount; i++) {
+          const pos = pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
+          const dir = pos.clone().length(settings.particles.velocity);
+          particles.add(
+            canvas.width / 2 + pos.x,
+            canvas.height / 2 - pos.y,
+            dir.x,
+            -dir.y
+          );
+        }
+
+        // Atualiza a posição e desenha todas as partículas
+        particles.update(deltaTime);
+        particles.draw(context, image);
+      }
+
+      // Redimensionamento responsivo para manter a proporção ao mudar o tamanho da janela
+      function onResize() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+      window.onresize = onResize;
+
+      // Inicializa a animação
+      setTimeout(function () {
+        onResize();
+        render();
+      }, 10);
+    })(document.getElementById('pinkboard'));
+  </script>
+</body>
+</html>
