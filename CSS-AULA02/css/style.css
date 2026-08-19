@@ -16,6 +16,7 @@ h1 {
     color: #4b0088;
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: 50px;
+    font-weight: 900;
 }
 
 h2 {
@@ -24,9 +25,16 @@ h2 {
 
 p {
     font-size: 2em;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Playfair Display", serif;
+    /* Espaçamento entre linhas.*/
+    line-height: 2em;
 }
+    
 
+span {
+    font-size: 2em;
+    color: #e774b4;
+}
 
 /*--------------------------------------------------*/
 /* PX (Pixels) é uma unidade fixa. O tamanho sempre será o mesmo, independente do tamanho da tela.*/
@@ -37,4 +45,12 @@ p {
 
 /* 5VW - 5% da largura da tela / isso faz com que o tamanho do texto se ajuste ao tamanho da tela! Muito útil para design responsivo.*/
 
+/*Controla a grossura (negrito) do texto.
+100 = Super fino
+400 = Normal
+700 = Negrito
+900 = Super negrito
+*/
+
+/* STRONG - Forte importancia.*/
 /*--------------------------------------------------*/
