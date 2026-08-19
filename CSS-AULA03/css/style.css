@@ -1,0 +1,23 @@
+body {
+    background-color: bisque;
+}
+/* SELETORES */
+
+/* Própria tag HTMl*/
+/* h1, p, span, a,...*/
+
+/* Id */
+/* Atributo HTML qdiciona um indentificador ÚNICO na tag. Esse indentificador pode ser utilizado no CSS para selecionarmos o elemento:*/
+
+#paragrafo1 {
+    color: rgb(rgb(112, 31, 243);
+     font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 50px;
+}
+
+/* CLASSES */
+/* Atributos HTML que adiciona um  indentificador reutilizavel na TAG. Esse indentificador pode ser utilizado no CSS para selecionarmos o(s) elementos(s):*/
+
+.titulo{
+    color: brown;
+}
