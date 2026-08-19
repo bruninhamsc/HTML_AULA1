@@ -1,3 +1,37 @@
 body {
-    background-color: powderblue;
+    /*Nome da cor*/
+    /*background-color: red;*/
+
+    /*cores hexanominal:*/
+    /*background-color: #E8CCFF;*/
+
+    /*RGB*/
+    /*background-color: rgb(48, 0, 64);*/
+
+    /*RGB COM TRANSPARENCIA*/
+    background-color: rgb(141, 66, 166, 0.3);
 }
+
+h1 {
+    color: #4b0088;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 50px;
+}
+
+h2 {
+    font-size: 3em;
+}
+
+p {
+    font-size: 2em;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/*--------------------------------------------------*/
+/* PX (Pixels) é uma unidade fixa. O tamanho sempre será o mesmo, independente do tamanho da tela.*/
+
+/* 2EM - O dobro do tamnho padrão, significa que ele é o multiplicador do amanho base.*/
+
+/**/
+/*--------------------------------------------------*/
