@@ -33,5 +33,8 @@ p {
 
 /* 2EM - O dobro do tamnho padrão, significa que ele é o multiplicador do amanho base.*/
 
-/**/
+/* 120% - 20% maior que o padrão.*/
+
+/* 5VW - 5% da largura da tela / isso faz com que o tamanho do texto se ajuste ao tamanho da tela! Muito útil para design responsivo.*/
+
 /*--------------------------------------------------*/
