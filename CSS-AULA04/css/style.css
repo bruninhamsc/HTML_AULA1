@@ -1,0 +1,22 @@
+.box {
+  width: 200px;
+  height: 100px;
+  background-color: blueviolet;
+  border: 5px solid grey; /*Solid: uma borda cheia.  |  dashed: uma borda traçada.*/
+  padding: 20px;
+  margin: 100px;
+}
+
+
+.box2 {
+  /*padding: 20px; Aplica em todos os lados.*/
+  width: 200px;
+  height: 100px;
+  background-color: antiquewhite;
+  border: 5px dashed rgb(rgb(226, 145, 236);
+  border-radius: 20px;
+  padding-top: 10px;  /* EM CIMA */
+  padding-right: 40px;  /* DO LADO DIREITO */
+  padding-bottom: 20px;  /* EM BAIXO */
+  padding-left: 25px;  /* DO LADO ESQUERDO */
+}
